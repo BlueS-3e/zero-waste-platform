@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Zero-Waste Platform",
+    "slug": "zero-waste-platform",
+    "scheme": "zerowaste",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon-32.png"
+    },
+    "plugins": ["expo-router", "expo-location"],
+    "extra": {}
+  }
+}
