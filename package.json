@@ -6,8 +6,8 @@
     "start": "expo start",
     "dev": "expo start --web",
     "web": "expo start --web",
-    "build:web": "expo export -p web",
-    "vercel-build": "expo export -p web"
+    "build:web": "npx expo export -p web",
+    "vercel-build": "npx expo export -p web"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
@@ -35,7 +35,11 @@
     "@babel/core": "^7.24.0",
     "@types/node": "^26.1.2",
     "@types/react": "~18.2.79",
+    "metro-resolver": "^0.80.3",
     "typescript": "5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "private": true
 }
