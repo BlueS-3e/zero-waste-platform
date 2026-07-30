@@ -1,5 +1,6 @@
 import { getSupabaseClientOrThrow } from "@/services/supabase";
 import type { AdminStats } from "./types";
+import type { Profile } from "@/features/auth/types";
 
 export async function getAdminStats(): Promise<AdminStats> {
   const supabase = getSupabaseClientOrThrow();
@@ -16,4 +17,11 @@ export async function getAdminStats(): Promise<AdminStats> {
     pendingRequests: pending ?? 0,
     completedRequests: completed ?? 0,
   };
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = getSupabaseClientOrThrow();
+  const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Profile[];
 }

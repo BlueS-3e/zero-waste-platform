@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 
 type ButtonProps = {
   title: string;
@@ -9,6 +10,7 @@ type ButtonProps = {
   fullWidth?: boolean;
   disabled?: boolean;
   style?: ViewStyle | ViewStyle[];
+  accessibilityLabel?: string;
 };
 
 export function Button({
@@ -18,11 +20,14 @@ export function Button({
   fullWidth = false,
   disabled = false,
   style,
+  accessibilityLabel,
 }: ButtonProps) {
   return (
     <Pressable
       onPress={disabled ? undefined : onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
       style={({ pressed }) => [
         styles.base,
         variant === "secondary"
@@ -43,10 +48,10 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 999,
-    paddingVertical: 16,
-    paddingHorizontal: 22,
-    minWidth: 140,
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 18,
+    minWidth: 120,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primary,
@@ -78,13 +83,11 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
+    ...typography.buttonText,
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
   },
   ghostLabel: {
+    ...typography.buttonText,
     color: colors.primary,
-    fontSize: 16,
-    fontWeight: "700",
   },
 });

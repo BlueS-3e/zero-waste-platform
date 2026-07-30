@@ -10,19 +10,18 @@ export async function signIn({ email, password }: SignInPayload) {
 
 export async function signUp({ fullName, email, password, role }: SignUpPayload) {
   const supabase = getSupabaseClientOrThrow();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      // fullName is passed here so the DB trigger can extract it
+      data: { fullName, role },
+    },
+  });
   if (error) throw error;
 
-  if (data.user) {
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: data.user.id,
-      email,
-      full_name: fullName,
-      role,
-    });
-
-    if (profileError) throw profileError;
-  }
+  // We no longer manually create the profile row here.
+  // The Supabase 'on_auth_user_created' trigger handles it automatically.
 
   return data;
 }

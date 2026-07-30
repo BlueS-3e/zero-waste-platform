@@ -24,21 +24,85 @@ function isValidSupabaseAnonKey(value: unknown): value is string {
   return trimmed.length >= 32 && !["anon-key-placeholder", "your_supabase_anon_key"].includes(trimmed);
 }
 
+function decodeBase64Url(value: string) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = normalized.length % 4;
+  const padded = normalized + (padding === 0 ? "" : "=".repeat(4 - padding));
+
+  if (typeof atob === "function") {
+    return atob(padded);
+  }
+
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(padded, "base64").toString("utf8");
+  }
+
+  return null;
+}
+
+function deriveSupabaseUrlFromAnonKey(value: unknown): string | undefined {
+  if (!isValidSupabaseAnonKey(value)) {
+    return undefined;
+  }
+
+  const segments = value.trim().split(".");
+  if (segments.length !== 3) {
+    return undefined;
+  }
+
+  const payload = decodeBase64Url(segments[1]);
+  if (!payload) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(payload);
+    if (parsed?.ref && typeof parsed.ref === "string") {
+      return `https://${parsed.ref}.supabase.co`;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
 function resolveSupabaseConfig() {
   const extra = Constants.expoConfig?.extra ?? (Constants.manifest as any)?.extra ?? getWebExtraConfig() ?? {};
-  const envSupabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  const envSupabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
-  const supabaseUrl = isValidHttpUrl(envSupabaseUrl)
-    ? envSupabaseUrl.trim()
-    : isValidHttpUrl(extra.supabaseUrl)
+  const envSupabaseUrl = typeof process.env.EXPO_PUBLIC_SUPABASE_URL === "string"
+    ? process.env.EXPO_PUBLIC_SUPABASE_URL.trim()
+    : typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string"
+    ? process.env.NEXT_PUBLIC_SUPABASE_URL.trim()
+    : undefined;
+  const envSupabaseAnonKey = typeof process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY === "string"
+    ? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY.trim()
+    : typeof process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY === "string"
+    ? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.trim()
+    : undefined;
+  const extraSupabaseUrl = typeof extra.supabaseUrl === "string"
     ? extra.supabaseUrl.trim()
+    : typeof extra.nextSupabaseUrl === "string"
+    ? extra.nextSupabaseUrl.trim()
+    : undefined;
+  const extraSupabaseAnonKey = typeof extra.supabaseAnonKey === "string"
+    ? extra.supabaseAnonKey.trim()
+    : typeof extra.supabasePublishableKey === "string"
+    ? extra.supabasePublishableKey.trim()
+    : typeof extra.nextSupabasePublishableKey === "string"
+    ? extra.nextSupabasePublishableKey.trim()
     : undefined;
 
+  const supabaseUrl = isValidHttpUrl(envSupabaseUrl)
+    ? envSupabaseUrl
+    : isValidHttpUrl(extraSupabaseUrl)
+    ? extraSupabaseUrl
+    : deriveSupabaseUrlFromAnonKey(envSupabaseAnonKey)
+    ?? deriveSupabaseUrlFromAnonKey(extraSupabaseAnonKey);
+
   const supabaseAnonKey = isValidSupabaseAnonKey(envSupabaseAnonKey)
-    ? envSupabaseAnonKey.trim()
-    : isValidSupabaseAnonKey(extra.supabaseAnonKey)
-    ? extra.supabaseAnonKey.trim()
+    ? envSupabaseAnonKey
+    : isValidSupabaseAnonKey(extraSupabaseAnonKey)
+    ? extraSupabaseAnonKey
     : undefined;
 
   return { supabaseUrl, supabaseAnonKey };
