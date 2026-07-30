@@ -35,7 +35,11 @@
     "@babel/core": "^7.24.0",
     "@types/node": "^26.1.2",
     "@types/react": "~18.2.79",
+    "metro-resolver": "^0.80.3",
     "typescript": "5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "private": true
 }
