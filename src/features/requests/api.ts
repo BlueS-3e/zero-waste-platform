@@ -8,7 +8,19 @@ export async function createRequest(payload: CreateRequestPayload) {
   };
 
   const supabase = getSupabaseClientOrThrow();
-  const { data, error } = await supabase.from("waste_requests").insert(request).select().single();
+  // map our frontend fields to DB columns (address, location_lat, location_lng)
+  const dbRow: any = {
+    household_id: request.household_id,
+    collector_id: request.collector_id,
+    status: request.status,
+    waste_type: request.waste_type,
+    address: request.address ?? null,
+    location_lat: request.location_lat ?? null,
+    location_lng: request.location_lng ?? null,
+    description: request.description ?? null,
+  };
+
+  const { data, error } = await supabase.from("waste_requests").insert(dbRow).select().single();
   if (error) throw error;
   return data as WasteRequest;
 }

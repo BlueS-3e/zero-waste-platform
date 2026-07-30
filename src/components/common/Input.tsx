@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
 import { colors } from "@/theme/colors";
+import { typography } from "@/theme/typography";
 
 type InputProps = TextInputProps & {
   containerStyle?: object;
@@ -20,15 +21,15 @@ export function Input({ containerStyle, style, ...props }: InputProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 14,
+    marginBottom: 10,
   },
   input: {
+    ...typography.inputText,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: colors.surface,
     color: colors.text,
     shadowColor: "#000",

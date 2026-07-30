@@ -21,7 +21,6 @@
     },
     "types": [
       "react",
-      "react-native",
       "node"
     ]
   },
