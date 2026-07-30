@@ -6,8 +6,8 @@
     "start": "expo start",
     "dev": "expo start --web",
     "web": "expo start --web",
-    "build:web": "npx expo export -p web",
-    "vercel-build": "npx expo export -p web"
+    "build:web": "npx expo export --platform web",
+    "vercel-build": "npx expo export --platform web"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
