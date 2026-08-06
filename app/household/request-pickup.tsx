@@ -18,6 +18,7 @@ export default function RequestPickupScreen() {
   const { user } = useAuth();
   const [wasteType, setWasteType] = useState(wasteOptions[0]);
   const [description, setDescription] = useState("");
+  const [phone, setPhone] = useState(user?.user_metadata?.phone || "");
   const [location, setLocation] = useState("");
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
@@ -33,11 +34,18 @@ export default function RequestPickupScreen() {
     setError(null);
     setLoading(true);
 
+    if (!location && !locationLat) {
+      setError("Please provide an address or use your current location.");
+      setLoading(false);
+      return;
+    }
+
     try {
       await createRequest({
         household_id: user.id,
         waste_type: wasteType,
         description,
+        phone: phone || undefined,
         address: location || undefined,
         location_lat: locationLat ?? null,
         location_lng: locationLng ?? null,
@@ -92,7 +100,11 @@ export default function RequestPickupScreen() {
         </View>
 
         <Input placeholder="Description" value={description} onChangeText={setDescription} />
-        <Input placeholder="Location" value={location} onChangeText={setLocation} />
+        <Input placeholder="Contact Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <View>
+          <Input placeholder="Location" value={location} onChangeText={setLocation} />
+          <Text style={styles.hintText}>Tip: Using 'Use my location' helps collectors find you faster!</Text>
+        </View>
         <Button title="Use my location" fullWidth variant="ghost" onPress={handleUseMyLocation} />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -132,5 +144,12 @@ const styles = StyleSheet.create({
   error: {
     color: "#c62828",
     marginBottom: 12,
+  },
+  hintText: {
+    fontSize: 11,
+    color: colors.muted,
+    marginTop: 4,
+    marginLeft: 4,
+    fontStyle: "italic",
   },
 });

@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/store/authStore";
 import { getAdminStats } from "@/features/admin/api";
 import type { AdminStats } from "@/features/admin/types";
+import { typography } from "@/theme/typography";
 
 const chartWidth = 340;
 
@@ -36,10 +37,10 @@ export default function AdminAnalyticsScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <BrandHeader title="Analytics" showLogout showBack />
-      <Text style={styles.subtitle}>Track trends and understand how the platform is performing.</Text>
+      <Text style={styles.subtitle}>Track platform growth and revenue trends.</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
       ) : error ? (
         <Card>
           <Text style={styles.cardTitle}>Error</Text>
@@ -47,48 +48,49 @@ export default function AdminAnalyticsScreen() {
         </Card>
       ) : (
         <>
-          <Card>
-            <Text style={styles.cardTitle}>Active platform metrics</Text>
-            <Text style={styles.body}>Monitor households, collectors, and request health.</Text>
-            <View style={styles.metricRow}>
-              <View style={styles.metricBlock}>
-                <Text style={styles.metricValue}>{stats?.households ?? 0}</Text>
-                <Text style={styles.metricLabel}>Households</Text>
+          <Card style={styles.revenueSummaryCard}>
+            <Text style={styles.revenueTitle}>Platform Revenue (₵)</Text>
+            <Text style={styles.revenueValue}>₵{stats?.totalRevenue.toFixed(2)}</Text>
+            <Text style={styles.revenueSubtitle}>Generated from platform service fees</Text>
+          </Card>
+
+          <Card style={styles.card}>
+            <Text style={styles.cardTitle}>Platform Health</Text>
+            <View style={styles.metricGrid}>
+              <View style={styles.metricBox}>
+                <Text style={styles.metricVal}>{stats?.households}</Text>
+                <Text style={styles.metricLab}>Users</Text>
               </View>
-              <View style={styles.metricBlock}>
-                <Text style={styles.metricValue}>{stats?.collectors ?? 0}</Text>
-                <Text style={styles.metricLabel}>Collectors</Text>
+              <View style={styles.metricBox}>
+                <Text style={styles.metricVal}>{stats?.collectors}</Text>
+                <Text style={styles.metricLab}>Collectors</Text>
               </View>
-            </View>
-            <View style={styles.metricRow}>
-              <View style={styles.metricBlock}>
-                <Text style={styles.metricValue}>{stats?.pendingRequests ?? 0}</Text>
-                <Text style={styles.metricLabel}>Pending</Text>
-              </View>
-              <View style={styles.metricBlock}>
-                <Text style={styles.metricValue}>{stats?.completedRequests ?? 0}</Text>
-                <Text style={styles.metricLabel}>Completed</Text>
+              <View style={styles.metricBox}>
+                <Text style={styles.metricVal}>{stats?.completedRequests}</Text>
+                <Text style={styles.metricLab}>Completed</Text>
               </View>
             </View>
           </Card>
 
-          <Card>
-            <Text style={styles.cardTitle}>Activity snapshot</Text>
+          <Card style={styles.card}>
+            <Text style={styles.cardTitle}>Request Lifecycle Distribution</Text>
             <BarChart
               data={{
-                labels: ["Households", "Collectors", "Pending", "Completed"],
-                datasets: [{ data: [stats?.households ?? 0, stats?.collectors ?? 0, stats?.pendingRequests ?? 0, stats?.completedRequests ?? 0] }],
+                labels: ["Pending", "Collected", "Completed"],
+                datasets: [{ data: [stats?.pendingRequests ?? 0, stats?.collectedRequests ?? 0, stats?.completedRequests ?? 0] }],
               }}
               width={chartWidth}
-              height={220}              yAxisLabel=""
-              yAxisSuffix=""              chartConfig={{
+              height={220}
+              yAxisLabel=""
+              yAxisSuffix=""
+              chartConfig={{
                 backgroundGradientFrom: colors.surface,
                 backgroundGradientTo: colors.surface,
                 color: () => colors.primary,
                 labelColor: () => colors.text,
                 fillShadowGradient: colors.primary,
                 fillShadowGradientOpacity: 1,
-                barPercentage: 0.8,
+                barPercentage: 0.7,
                 propsForBackgroundLines: { strokeDasharray: "3" },
               }}
               style={styles.chart}
@@ -103,17 +105,21 @@ export default function AdminAnalyticsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  container: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 36, gap: 12 },
-  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
-  title: { fontSize: 24, fontWeight: "800", color: colors.primary },
-  logoutButton: { backgroundColor: colors.primary, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999 },
-  logoutText: { color: "#fff", fontSize: 12, fontWeight: "700" },
-  subtitle: { fontSize: 15, color: colors.muted, marginBottom: 4 },
-  cardTitle: { fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 10 },
-  body: { color: colors.muted, fontSize: 14, lineHeight: 20 },
-  metricRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, marginBottom: 12 },
-  metricBlock: { flex: 1, backgroundColor: colors.surfaceLight, borderRadius: 16, padding: 14, alignItems: "center" },
-  metricValue: { fontSize: 24, fontWeight: "800", color: colors.primary },
-  metricLabel: { fontSize: 13, color: colors.muted, marginTop: 4 },
-  chart: { marginTop: 12, borderRadius: 16 },
+  container: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 36, gap: 16 },
+  subtitle: { ...typography.subtitle, marginBottom: 4 },
+  card: { padding: 16, borderRadius: 16, backgroundColor: colors.surface },
+  cardTitle: { ...typography.title, fontSize: 16, marginBottom: 12 },
+  body: { color: colors.muted, fontSize: 14 },
+
+  revenueSummaryCard: { backgroundColor: colors.primary, padding: 24, borderRadius: 20 },
+  revenueTitle: { fontSize: 12, color: "rgba(255,255,255,0.8)", fontWeight: "600", textTransform: "uppercase" },
+  revenueValue: { fontSize: 32, color: "#fff", fontWeight: "800", marginTop: 4 },
+  revenueSubtitle: { fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 4 },
+
+  metricGrid: { flexDirection: "row", gap: 10 },
+  metricBox: { flex: 1, backgroundColor: colors.surfaceLight, padding: 12, borderRadius: 12, alignItems: "center" },
+  metricVal: { fontSize: 18, fontWeight: "800", color: colors.primary },
+  metricLab: { fontSize: 10, color: colors.muted, marginTop: 2, textTransform: "uppercase" },
+
+  chart: { marginTop: 8, marginLeft: -12, borderRadius: 16 },
 });

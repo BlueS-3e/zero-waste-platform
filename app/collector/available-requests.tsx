@@ -7,6 +7,7 @@ import { colors } from "@/theme/colors";
 import { useAuth } from "@/store/authStore";
 import { acceptRequest, getPendingRequests } from "@/features/requests/api";
 import type { WasteRequest } from "@/features/requests/types";
+import { typography } from "@/theme/typography";
 
 import { BrandHeader } from "@/components/common/BrandHeader";
 
@@ -41,36 +42,64 @@ export default function AvailableRequestsScreen() {
 
     try {
       await acceptRequest(requestId, user.id);
-      setRequests((current) => current.filter((request) => request.id !== requestId));
+      // After accepting, take them to the active job screen to see navigation
+      router.push("/collector/active-job");
     } catch (err: any) {
       setError(err.message || "Unable to accept request.");
     }
   };
 
+  const handleSkip = (requestId: string) => {
+    setRequests(current => current.filter(r => r.id !== requestId));
+  };
+
+  // Realistic mock earning calculation for demo
+  const getMockEarning = (wasteType: string) => {
+    const prices: Record<string, number> = {
+      "Household": 25.00,
+      "Plastic": 15.00,
+      "Organic": 10.00,
+      "Electronic": 50.00,
+      "Bulk": 80.00
+    };
+    return prices[wasteType] || 20.00;
+  };
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <BrandHeader title="Available requests" showLogout showBack />
-      <Text style={styles.subtitle}>Fresh pickup opportunities are waiting for your next trip.</Text>
+      <Text style={styles.subtitle}>Choose your next task and see your potential earnings in GHS.</Text>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {loading ? <ActivityIndicator size="large" color={colors.primary} /> : null}
+      {loading ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} /> : null}
 
       {requests.length === 0 && !loading ? (
-        <Card>
+        <Card style={styles.emptyCard}>
           <Text style={styles.cardTitle}>No pending requests</Text>
-          <Text style={styles.body}>There are no new pickup requests available right now.</Text>
+          <Text style={styles.body}>Check back soon for new opportunities.</Text>
         </Card>
       ) : null}
 
       {requests.map((request) => (
         <Card key={request.id} style={styles.card}>
           <View style={styles.requestRow}>
-            <Text style={styles.cardTitle}>{request.waste_type} pickup</Text>
-            <Text style={styles.status}>{request.status}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>{request.waste_type} Pickup</Text>
+              <Text style={styles.locationText}>{request.address || "Area unknown"}</Text>
+            </View>
+            <View style={styles.earningBadge}>
+              <Text style={styles.earningText}>₵{getMockEarning(request.waste_type).toFixed(2)}</Text>
+            </View>
           </View>
-          <Text style={styles.body}>{request.address ?? "Location not provided"}</Text>
-          <Text style={styles.body}>{request.description ?? "No additional details."}</Text>
-          <Button title="Accept request" fullWidth onPress={() => handleAccept(request.id)} />
+
+          {request.description && (
+            <Text style={styles.descriptionText} numberOfLines={2}>{request.description}</Text>
+          )}
+
+          <View style={{ gap: 8 }}>
+            <Button title="Accept Job" fullWidth onPress={() => handleAccept(request.id)} />
+            <Button title="Not Interested" fullWidth variant="ghost" onPress={() => handleSkip(request.id)} />
+          </View>
         </Card>
       ))}
     </ScrollView>
@@ -79,12 +108,16 @@ export default function AvailableRequestsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  container: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 36, gap: 12 },
-  subtitle: { fontSize: 15, color: colors.muted, marginBottom: 4 },
-  card: { padding: 16, borderRadius: 16, backgroundColor: colors.surface },
-  cardTitle: { fontSize: 18, fontWeight: "700", color: colors.text, marginBottom: 8 },
-  body: { color: colors.muted, fontSize: 14, lineHeight: 20 },
-  requestRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  status: { color: colors.primary, fontWeight: "700", textTransform: "capitalize" },
-  error: { color: "#c62828", marginBottom: 8 },
+  container: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 40, gap: 14 },
+  subtitle: { ...typography.subtitle, marginBottom: 4 },
+  card: { padding: 16, borderRadius: 16, backgroundColor: colors.surface, gap: 12 },
+  cardTitle: { ...typography.title, fontSize: 17 },
+  body: { ...typography.body, color: colors.muted },
+  locationText: { ...typography.label, color: colors.muted, marginTop: 2 },
+  descriptionText: { ...typography.body, fontSize: 13, color: colors.text, opacity: 0.8 },
+  requestRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  earningBadge: { backgroundColor: colors.surfaceLight, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border },
+  earningText: { fontSize: 14, fontWeight: "800", color: colors.success },
+  error: { color: colors.danger, marginBottom: 8, ...typography.body, textAlign: "center" },
+  emptyCard: { alignItems: "center", padding: 24 },
 });

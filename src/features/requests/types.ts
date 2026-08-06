@@ -1,4 +1,4 @@
-export type WasteRequestStatus = "pending" | "accepted" | "in_progress" | "completed" | "cancelled";
+export type WasteRequestStatus = "pending" | "accepted" | "in_progress" | "collected" | "completed" | "cancelled";
 
 export type WasteRequest = {
   id: string;
@@ -6,6 +6,8 @@ export type WasteRequest = {
   collector_id?: string;
   waste_type: string;
   description?: string;
+  // contact phone for this specific request
+  phone?: string;
   // human readable address
   address?: string;
   // human readable address or pickup location
@@ -22,6 +24,7 @@ export type CreateRequestPayload = {
   collector_id?: string;
   waste_type: string;
   description?: string;
+  phone?: string;
   address?: string;
   // human readable address or pickup location
   location?: string;

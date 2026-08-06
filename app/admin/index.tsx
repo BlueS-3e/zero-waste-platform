@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       <Text style={styles.subtitle}>Monitor the platform with a simple, clear view of daily activity.</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
       ) : error ? (
         <Card style={styles.card}>
           <Text style={styles.cardTitle}>Error</Text>
@@ -49,6 +49,16 @@ export default function AdminDashboard() {
         </Card>
       ) : (
         <>
+          <Card style={styles.revenueCard}>
+            <View>
+              <Text style={styles.revenueLabel}>Total System Revenue</Text>
+              <Text style={styles.revenueValue}>₵{stats?.totalRevenue.toFixed(2)}</Text>
+            </View>
+            <View style={styles.revenueBadge}>
+              <Text style={styles.revenueBadgeText}>GHS</Text>
+            </View>
+          </Card>
+
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Management portal</Text>
             <View style={styles.menuGrid}>
@@ -60,15 +70,31 @@ export default function AdminDashboard() {
 
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Platform overview</Text>
-            <Text style={styles.body}>Households: {stats?.households ?? 0}</Text>
-            <Text style={styles.body}>Collectors: {stats?.collectors ?? 0}</Text>
-            <Text style={styles.body}>Pending requests: {stats?.pendingRequests ?? 0}</Text>
-            <Text style={styles.body}>Completed requests: {stats?.completedRequests ?? 0}</Text>
+            <View style={styles.statGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statCount}>{stats?.households ?? 0}</Text>
+                <Text style={styles.statLabel}>Households</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statCount}>{stats?.collectors ?? 0}</Text>
+                <Text style={styles.statLabel}>Collectors</Text>
+              </View>
+            </View>
+            <View style={[styles.statGrid, { marginTop: 16 }]}>
+              <View style={styles.statItem}>
+                <Text style={styles.statCount}>{stats?.pendingRequests ?? 0}</Text>
+                <Text style={styles.statLabel}>Pending</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statCount}>{stats?.completedRequests ?? 0}</Text>
+                <Text style={styles.statLabel}>Completed</Text>
+              </View>
+            </View>
           </Card>
 
           <Card style={styles.card}>
-            <Text style={styles.cardTitle}>Requests trend</Text>
-            <Text style={styles.body}>Weekly activity for pickups and completed jobs.</Text>
+            <Text style={styles.cardTitle}>Daily Volume</Text>
+            <Text style={styles.body}>Snapshot of recent system activity.</Text>
             <LineChart
               data={{
                 labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -76,11 +102,11 @@ export default function AdminDashboard() {
                   {
                     data: [
                       stats?.pendingRequests ?? 0,
+                      stats?.collectedRequests ?? 0,
+                      stats?.completedRequests ?? 0,
+                      (stats?.pendingRequests ?? 0) + 1,
                       stats?.pendingRequests ?? 0,
-                      stats?.pendingRequests ?? 0,
-                      stats?.pendingRequests ?? 0,
-                      stats?.pendingRequests ?? 0,
-                      stats?.pendingRequests ?? 0,
+                      stats?.collectedRequests ?? 0,
                       stats?.completedRequests ?? 0,
                     ],
                     strokeWidth: 3,
@@ -88,7 +114,7 @@ export default function AdminDashboard() {
                 ],
               }}
               width={chartWidth}
-              height={210}
+              height={180}
               chartConfig={{
                 backgroundGradientFrom: colors.surface,
                 backgroundGradientTo: colors.surface,
@@ -108,11 +134,29 @@ export default function AdminDashboard() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  container: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 36, gap: 12 },
+  container: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 36, gap: 14 },
   subtitle: { ...typography.subtitle, marginBottom: 4 },
   card: { padding: 16, borderRadius: 16, backgroundColor: colors.surface },
-  cardTitle: { ...typography.title, marginBottom: 8 },
-  body: { ...typography.body, color: colors.muted },
+  cardTitle: { ...typography.title, fontSize: 17, marginBottom: 12 },
+  body: { ...typography.body, color: colors.muted, marginBottom: 8 },
   chart: { marginTop: 12, borderRadius: 16 },
-  menuGrid: { gap: 10, marginTop: 4 },
+  menuGrid: { gap: 10 },
+
+  revenueCard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    padding: 20,
+    borderRadius: 20
+  },
+  revenueLabel: { fontSize: 12, color: "rgba(255,255,255,0.8)", fontWeight: "600", textTransform: "uppercase" },
+  revenueValue: { fontSize: 28, color: "#fff", fontWeight: "800", marginTop: 4 },
+  revenueBadge: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  revenueBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
+
+  statGrid: { flexDirection: "row", gap: 12 },
+  statItem: { flex: 1, backgroundColor: colors.surfaceLight, padding: 14, borderRadius: 12, alignItems: "center" },
+  statCount: { fontSize: 20, fontWeight: "800", color: colors.text },
+  statLabel: { fontSize: 11, color: colors.muted, marginTop: 2 }
 });

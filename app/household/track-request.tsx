@@ -8,6 +8,7 @@ import { colors } from "@/theme/colors";
 import { useAuth } from "@/store/authStore";
 import { getRequestsByHousehold } from "@/features/requests/api";
 import type { WasteRequest } from "@/features/requests/types";
+import { typography } from "@/theme/typography";
 
 import { BrandHeader } from "@/components/common/BrandHeader";
 
@@ -35,6 +36,10 @@ export default function TrackRequestScreen() {
 
   useEffect(() => {
     loadStatus();
+
+    // Auto-refresh interval for demonstration/live updates
+    const interval = setInterval(loadStatus, 5000);
+    return () => clearInterval(interval);
   }, [user]);
 
   return (
@@ -88,7 +93,21 @@ export default function TrackRequestScreen() {
               </MapView>
             </Card>
           ) : null}
-          <Button title="Pay now" fullWidth variant="primary" onPress={() => router.push("/household/payment")} />
+
+          {request.status === "collected" ? (
+            <View style={styles.paymentAction}>
+              <Text style={styles.paymentInstruction}>
+                Waste collected! Please authorize the payment to finalize the service.
+              </Text>
+              <Button title="Authorize Payment (₵)" fullWidth variant="primary" onPress={() => router.push("/household/payment")} />
+            </View>
+          ) : (
+            <View style={styles.paymentWaiting}>
+              <Text style={styles.waitingText}>
+                The payment button will appear once the collector marks the waste as collected.
+              </Text>
+            </View>
+          )}
         </>
       ) : !loading ? (
         <Card>
@@ -112,4 +131,8 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   statusBadge: { backgroundColor: colors.surfaceLight, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: colors.border },
   statusText: { fontSize: 12, fontWeight: "700", color: colors.primary, textTransform: "uppercase" },
+  paymentAction: { marginTop: 12, gap: 12 },
+  paymentInstruction: { ...typography.body, color: colors.success, textAlign: "center", fontWeight: "700", lineHeight: 20 },
+  paymentWaiting: { marginTop: 12, padding: 16, backgroundColor: colors.surfaceLight, borderRadius: 12, borderWidth: 1, borderColor: colors.border, borderStyle: "dashed" },
+  waitingText: { ...typography.body, color: colors.muted, textAlign: "center", fontSize: 13 },
 });

@@ -23,6 +23,7 @@ create table waste_requests (
   location_lng double precision,
   address text,
   description text,
+  phone text,
   scheduled_at timestamptz,
   created_at timestamptz default now()
 );
